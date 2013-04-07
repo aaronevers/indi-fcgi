@@ -13,7 +13,7 @@ OBJECTS_DIR = tmp
 MOC_DIR = tmp
 RCC_DIR = tmp
 
-LIBS += -lfcgi
+LIBS += /usr/local/lib/libfcgi.a
 
 HEADERS += src/indiclient.h   src/indifcgi.h
 SOURCES += src/indiclient.cpp src/indifcgi.cpp src/main.cpp
