@@ -15,6 +15,7 @@
  ***********************************************************************/
 
 #include "indifcgi.h"
+#include <iostream>
 
 extern QTextStream qout;
 
@@ -27,14 +28,25 @@ IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm)
 void IndiFcgi::run()
 {
     int count = 0;
-    while(FCGI_Accept() >= 0)
+
+    while (FCGI_Accept() >= 0)
     {
-        printf("Content-type: text/html\r\n"
-           "\r\n"
-           "<title>FastCGI Hello! (C, fcgi_stdio library)</title>"
-           "<h1>FastCGI Hello! (C, fcgi_stdio library)</h1>"
-           "Request number %d running on host <i>%s</i>\n",
-           ++count, getenv("SERVER_NAME"));
+        char sz[512];
+        std::string str;
+
+        while (fread(sz, 1, 512, stdin))
+            str += sz;
+
+        QDomDocument doc("");
+        if (doc.setContent(QString(str.c_str()), false))
+        {
+            QDomElement e = doc.documentElement();
+            if (e.tagName() == "get" && e.hasAttribute("property"))
+            {
+//                printf("Content-type: text/xml\r\n%s\r\n", mProperties[e.attribute("property")].toStdString().c_str());
+                printf("%s\r\n", mProperties[e.attribute("property")].toStdString().c_str());
+            }
+        }
     }
 }
 
@@ -51,8 +63,6 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
         QString devicename = device + "." + name;
 
         if (op == "set")
-        {
-            qout << devicename << ": " << endl;
-        }
+            mProperties[devicename] = doc.toString(2);
     }
 }

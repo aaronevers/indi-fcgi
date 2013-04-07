@@ -13,24 +13,26 @@ _____________________________________________________________________
 
 Prerequisites:
 
-Building this program requires a Qt4 development environment.
-Qt4 is available for many platforms including Windows, Mac, and Linux.
+    Qt:
 
-FastCGI:
+        Building this program requires a Qt4 development environment.
+        Qt4 is available for many platforms including Windows, Mac, and Linux.
 
-    export CXXFLAGS="-include stdio.h"
-    ./configure
-    make
-    sudo make install
+    FastCGI:
+
+        export CXXFLAGS="-include stdio.h"
+        ./configure
+        make
+        sudo make install
 _____________________________________________________________________
 
 Building:
 
 _____________________________________________________________________
 
-Installation:
+Deployment:
 
-sudo cp conf/lighttpd.conf /etc/lighttpd/conf-enabled/10-fastcgi.conf
+    sudo cp conf/lighttpd.conf /etc/lighttpd/conf-enabled/10-fastcgi.conf
 
 _____________________________________________________________________
 

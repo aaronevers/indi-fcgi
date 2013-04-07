@@ -33,6 +33,7 @@ protected:
 
 private:
     IndiClient mClient;
+    QMap<QString, QString> mProperties;
 
 private slots:
     void propertyUpdated(QDomDocument);
