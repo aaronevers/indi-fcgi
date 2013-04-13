@@ -62,6 +62,13 @@ Deployment:
 
     If the webserver and indi.fcgi are configured and launched as
     described, the test page should be visible at: localhost/indi
+
+_____________________________________________________________________
+
+CAUTION!  Indi.fcgi currently exposes your indiserver to potential
+CAUTION!  command injection exploits if it is publicly accessible.
+CAUTION!  Indi.fcgi does NOT scrub xml user strings before sending
+CAUTION!  them on to the indiserver.
 _____________________________________________________________________
 
 Copyright © 2013 Aaron Evers
