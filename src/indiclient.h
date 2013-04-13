@@ -55,6 +55,8 @@ private slots:
     void socketDisconnected();
     void socketError(QAbstractSocket::SocketError);
     void socketReadyRead();
+
+public slots:
     void sendProperty(QDomDocument dom);
 
 };

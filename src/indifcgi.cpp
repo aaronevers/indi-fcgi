@@ -27,24 +27,72 @@ IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm)
 
 void IndiFcgi::run()
 {
-    int count = 0;
-
     while (FCGI_Accept() >= 0)
     {
-        char sz[512];
-        std::string str;
+        int size = atoi(getenv("CONTENT_LENGTH"));
 
-        while (fread(sz, 1, 512, stdin))
-            str += sz;
+        std::string content(size, ' ');
+        fread(&content[0], 1, size, stdin);
 
         QDomDocument doc("");
-        if (doc.setContent(QString(str.c_str()), false))
+        if (doc.setContent(QString(content.c_str()), false))
         {
             QDomElement e = doc.documentElement();
             if (e.tagName() == "get" && e.hasAttribute("property"))
             {
-//                printf("Content-type: text/xml\r\n%s\r\n", mProperties[e.attribute("property")].toStdString().c_str());
-                printf("%s\r\n", mProperties[e.attribute("property")].toStdString().c_str());
+                QMap<QString, QString>::const_iterator i  = mProperties.find(e.attribute("property"));
+                if (i != mProperties.end())
+                {
+                    QString str;
+                    str += "Content-type: txt/xml; charset=UTF-8\r\n";
+                    str += "Content-length: " + QString::number(i.value().size()) + "\r\n";
+                    str += "\r\n";
+                    str += i.value();
+                    str += "\r\n";
+                    str += "\r\n";
+                    printf("%s", str.toStdString().c_str());
+                }
+            }
+            else if (e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
+            {
+                QString type = e.attribute("type");
+                QDomDocument set("");
+                QDomElement property = set.createElement("new" + type + "Vector");
+
+                QStringList indiprop = e.attribute("property").split(".");
+                if (indiprop.size() >= 2)
+                {
+                    property.setAttribute("device", indiprop[0]);
+                    property.setAttribute("name", indiprop[1]);
+
+                    QDomNamedNodeMap attributes = e.attributes();
+                    int n;
+                    for (n = 0; n < attributes.size(); n++)
+                    {
+                        QDomNode attr = attributes.item(n);
+                        if (attr.nodeName() != "property" && attr.nodeName() != "type")
+                        {
+                            QDomElement element = doc.createElement("one" + type);
+                            element.setAttribute("name", attr.nodeName());
+                            element.appendChild(doc.createTextNode(attr.nodeValue()));
+                            property.appendChild(element);
+                        }
+                    }
+
+                    set.appendChild(property);
+                    qout << set.toString(2) << endl;
+                    mClient.sendProperty(set);
+
+                    QString good("<good/>");
+                    QString str;
+                    str += "Content-type: txt/xml; charset=UTF-8\r\n";
+                    str += "Content-length: " + QString::number(good.size()) + "\r\n";
+                    str += "\r\n";
+                    str += good;
+                    str += "\r\n";
+                    str += "\r\n";
+                    printf("%s", str.toStdString().c_str());
+                }
             }
         }
     }

@@ -9,9 +9,33 @@
         <script language="JavaScript" type="text/javascript" src="main.js"></script>
     </head>
     <body>
-        <div id="time">
-            <div width="100%" id="now">Now (JD)</div>
-            <div width="100%" id="jd"></div>
+        <div id="position" class="ui-widget">
+            <table>
+                <tr>
+                    <td><label>Az:</label></td>
+                    <td><label id="az"></label></td>
+                    <td><input id="azinput"></input></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label>El:</label></td>
+                    <td><label id="el"></label></td>
+                    <td><input id="elinput"></input></td>
+                    <td><button id="trackazel">Track Az/El</button></td>
+                </tr>
+                <tr>
+                    <td><label>RA:</label></td>
+                    <td><label id="ra"></label></td>
+                    <td><input id="rainput"></input></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label>Dec:</label></td>
+                    <td><label id="dec"></label></td>
+                    <td><input id="decinput"></input></td>
+                    <td><button id="trackradec">Track RA/Dec</button></td>
+                </tr>
+            </table>
         </div>
     </body>
 </html>
