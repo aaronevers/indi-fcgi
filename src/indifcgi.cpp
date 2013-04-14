@@ -19,8 +19,11 @@
 
 extern QTextStream qout;
 
-IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm)
+IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mReadOnly(false)
 {
+    if (argm.contains("readonly"))
+        mReadOnly = true;
+
     connect(&mClient, SIGNAL(propertyUpdate(QDomDocument)), SLOT(propertyUpdated(QDomDocument)));
     mClient.socketConnect(argm["host"]);
 }
@@ -37,23 +40,18 @@ void IndiFcgi::run()
         QDomDocument doc("");
         if (doc.setContent(QString(content.c_str()), false))
         {
+            QString response;
             QDomElement e = doc.documentElement();
+
             if (e.tagName() == "get" && e.hasAttribute("property"))
             {
                 QMap<QString, QString>::const_iterator i  = mProperties.find(e.attribute("property"));
                 if (i != mProperties.end())
                 {
-                    QString str;
-                    str += "Content-type: txt/xml; charset=UTF-8\r\n";
-                    str += "Content-length: " + QString::number(i.value().size()) + "\r\n";
-                    str += "\r\n";
-                    str += i.value();
-                    str += "\r\n";
-                    str += "\r\n";
-                    printf("%s", str.toStdString().c_str());
+                    response = i.value();
                 }
             }
-            else if (e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
+            else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
             {
                 QString type = e.attribute("type");
                 QDomDocument set("");
@@ -83,17 +81,18 @@ void IndiFcgi::run()
                     qout << set.toString(2) << endl;
                     mClient.sendProperty(set);
 
-                    QString good("<good/>");
-                    QString str;
-                    str += "Content-type: txt/xml; charset=UTF-8\r\n";
-                    str += "Content-length: " + QString::number(good.size()) + "\r\n";
-                    str += "\r\n";
-                    str += good;
-                    str += "\r\n";
-                    str += "\r\n";
-                    printf("%s", str.toStdString().c_str());
+                    response = "<good/>";
                 }
             }
+
+            QString str;
+            str += "Content-type: txt/xml; charset=UTF-8\r\n";
+            str += "Content-length: " + QString::number(response.size()) + "\r\n";
+            str += "\r\n";
+            str += response;
+            str += "\r\n";
+            str += "\r\n";
+            printf("%s", str.toStdString().c_str());
         }
     }
 }

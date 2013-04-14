@@ -6,16 +6,20 @@
         <link type="text/css" href="css/vader/jquery-ui-1.10.2.custom.css" rel="stylesheet" />
         <script language="JavaScript" type="text/javascript" src="js/jquery-1.9.1.js"></script>
         <script language="JavaScript" type="text/javascript" src="js/jquery-ui-1.10.2.custom.js"></script>
+        <script language="JavaScript" type="text/javascript" src="utility.js"></script>
         <script language="JavaScript" type="text/javascript" src="main.js"></script>
     </head>
     <body>
         <div id="position" class="ui-widget">
             <table>
                 <tr>
+                    <td colspan="4" id="positionstate"></td>
+                </tr>
+                <tr>
                     <td><label>Az:</label></td>
                     <td><label id="az"></label></td>
                     <td><input id="azinput"></input></td>
-                    <td></td>
+                    <td id="azelstate"></td>
                 </tr>
                 <tr>
                     <td><label>El:</label></td>
@@ -27,7 +31,7 @@
                     <td><label>RA:</label></td>
                     <td><label id="ra"></label></td>
                     <td><input id="rainput"></input></td>
-                    <td></td>
+                    <td id="radecstate"></td>
                 </tr>
                 <tr>
                     <td><label>Dec:</label></td>

@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
         qout << "  +h|++help             Prints this help statement." << endl;
         qout << "  ++host=<host[:port]>  Sets host[:port] of the indiserver." << endl;
         qout << "  ++log=<log>           Redirects log to the specified log." << endl;
+        qout << "  ++readonly            Disables setting INDI properties." << endl;
         qout << endl;
         return false;
     }

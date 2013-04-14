@@ -58,6 +58,9 @@ Deployment:
     to specify the indiserver location and port.  Use +host=host[:port]
     to specify the indiserver (-p 17624 specifies the fcgi port and
     must match the port number used in 10-fastcgi.conf).
+    Indi.fcgi options are denoted with a '+' character instead of
+    the more typical '-' character in order to distinguish them
+    from arguments to spawn-fcgi.
     LD_LIBRARY_PATH must contain the path to the Qt4 shared object libraries.
 
     If the webserver and indi.fcgi are configured and launched as
@@ -68,7 +71,10 @@ _____________________________________________________________________
 CAUTION!  Indi.fcgi currently exposes your indiserver to potential
 CAUTION!  command injection exploits if it is publicly accessible.
 CAUTION!  Indi.fcgi does NOT scrub xml user strings before sending
-CAUTION!  them on to the indiserver.
+CAUTION!  them on to the indiserver. I.e. don't make an indi.fcgi
+CAUTION!  web client accessible publicly, if you aren't willing
+CAUTION!  to also have your indiserver public. See:
+CAUTION!  http://xkcd.com/327/ for more information.
 _____________________________________________________________________
 
 Copyright © 2013 Aaron Evers
