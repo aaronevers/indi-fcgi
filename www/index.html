@@ -20,6 +20,9 @@
                     <td width="20%"><label id="az"></label></td>
                     <td width="20%"><input id="azinput"></input></td>
                     <td width="50%" id="azelstate"></td>
+                    <script>
+                        propertyCallbacks["Telescope.SetAltAz"] = function(xml) { updateState("#azelstate", xml); };
+                    </script>
                 </tr>
                 <tr>
                     <td><label>El:</label></td>
@@ -37,6 +40,9 @@
                     <td><label id="ra"></label></td>
                     <td><input id="rainput"></input></td>
                     <td id="radecstate"></td>
+                    <script>
+                        propertyCallbacks["Telescope.SetRADec2K"] = function(xml) { updateState("#radecstate", xml); };
+                    </script>
                 </tr>
                 <tr>
                     <td><label>Dec:</label></td>
@@ -49,6 +55,35 @@
                             .click(function() {setindi("<set type='Number' property='Telescope.SetRADec2K' RA='" + $("#rainput").val() + "' Dec='" + $("#decinput").val() + "'/>")});
                     </script>
                 </tr>
+                <script>
+                    propertyCallbacks["Telescope.Pointing"] = function(xml) {
+                        updateState("#positionstate", xml)
+
+                        $("oneNumber", xml).each(function(i) {
+                            var name = $(this).attr("name");
+                            if (name == "Az") {
+                                var d = $(this).text()
+                                d = dec2dms(d, 3, 3)
+                                $("#az").html(d);
+                            }
+                            else if (name == "Alt") {
+                                var d = $(this).text()
+                                d = dec2dms(d, 3, 3)
+                                $("#el").html(d);
+                            }
+                            else if (name == "RA2K") {
+                                var d = $(this).text()
+                                d = dec2dms(d, 2, 3)
+                                $("#ra").html(d);
+                            }
+                            else if (name == "Dec2K") {
+                                var d = $(this).text()
+                                d = dec2dms(d, 3, 3)
+                                $("#dec").html(d);
+                            }
+                        });
+                    };
+                </script>
             </table>
         </div>
     </body>

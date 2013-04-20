@@ -1,5 +1,7 @@
 var timestamp = "1970-00-00T00:00:00";
 
+var propertyCallbacks = {}
+
 $(function() {
     update();
 });
@@ -28,47 +30,10 @@ function updateProperties(xml) {
     timestamp = $("delta", xml).attr("timestamp");
 
     $("setNumberVector, defNumberVector", xml).each(function(i) {
-        var device = $(this).attr("device");
-        var name = $(this).attr("name");
+        var property = $(this).attr("device") + "." + $(this).attr("name");
 
-        if (device == "Telescope") {
-            if (name == "Pointing") {
-                updatePointing($(this));
-            }
-            else if (name == "SetAltAz") {
-                updateState("#azelstate", $(this));
-            }
-            else if (name == "SetRADec2K") {
-                updateState("#radecstate", $(this));
-            }
-        }
-    });
-}
-
-function updatePointing(xml) {
-    updateState("#positionstate", xml)
-
-    $("oneNumber", xml).each(function(i) {
-        var name = $(this).attr("name");
-        if (name == "Az") {
-            var d = $(this).text()
-            d = dec2dms(d, 3, 3)
-            $("#az").html(d);
-        }
-        else if (name == "Alt") {
-            var d = $(this).text()
-            d = dec2dms(d, 3, 3)
-            $("#el").html(d);
-        }
-        else if (name == "RA2K") {
-            var d = $(this).text()
-            d = dec2dms(d, 2, 3)
-            $("#ra").html(d);
-        }
-        else if (name == "Dec2K") {
-            var d = $(this).text()
-            d = dec2dms(d, 3, 3)
-            $("#dec").html(d);
+        if (property in propertyCallbacks) {
+            var f = propertyCallbacks[property]($(this));
         }
     });
 }
