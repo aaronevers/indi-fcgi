@@ -10,8 +10,8 @@ QT -= gui
 DESTDIR = bin
 
 OBJECTS_DIR = tmp
-MOC_DIR = tmp
-RCC_DIR = tmp
+MOC_DIR =     tmp
+RCC_DIR =     tmp
 
 LIBS += /usr/local/lib/libfcgi.a
 

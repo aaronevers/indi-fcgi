@@ -14,9 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***********************************************************************/
 
+#include <QtCore>
 #include "fcgi_stdio.h"
 #include <cstdlib>
-#include <QtCore>
 #include "indiclient.h"
 #include "indifcgi.h"
 

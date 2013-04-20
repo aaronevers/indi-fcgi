@@ -45,11 +45,41 @@ void IndiFcgi::run()
 
             if (e.tagName() == "get" && e.hasAttribute("property"))
             {
-                QMap<QString, QString>::const_iterator i  = mProperties.find(e.attribute("property"));
+                QHash<QString, QDomDocument>::const_iterator i = mProperties.find(e.attribute("property"));
                 if (i != mProperties.end())
                 {
-                    response = i.value();
+                    response = i.value().toString(2);
                 }
+            }
+            else if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
+            {
+                QString ts = e.attribute("timestamp");
+                QDateTime dt = QDateTime::fromString(ts, Qt::ISODate);
+                QDateTime max = dt;
+
+                QHashIterator<QString, QDomDocument> i(mProperties);
+                while (i.hasNext())
+                {
+                    i.next();
+                    QDomElement x = i.value().documentElement();
+                    if (x.hasAttribute("timestamp"))
+                    {
+                        QString its = x.attribute("timestamp");
+                        QDateTime idt = QDateTime::fromString(its, Qt::ISODate);
+                        if (idt > dt)
+                        {
+                            if (idt > max)
+                            {
+                                max = idt;
+                                ts = its;
+                            }
+
+                            response += i.value().toString(2);
+                        }
+                    }
+                }
+
+                response = "<delta timestamp='" + ts + "'>" + response + "</delta>\n";
             }
             else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
             {
@@ -109,7 +139,9 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
         QString type = e.tagName().mid(3);
         QString devicename = device + "." + name;
 
-        if (op == "set")
-            mProperties[devicename] = doc.toString(2);
+        if (op == "set" || op == "def")
+        {
+            mProperties[devicename] = doc.cloneNode(true).toDocument();
+        }
     }
 }

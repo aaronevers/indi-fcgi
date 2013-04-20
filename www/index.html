@@ -11,21 +11,26 @@
     </head>
     <body>
         <div id="position" class="ui-widget">
-            <table>
+            <table width="100%">
                 <tr>
                     <td colspan="4" id="positionstate"></td>
                 </tr>
                 <tr>
-                    <td><label>Az:</label></td>
-                    <td><label id="az"></label></td>
-                    <td><input id="azinput"></input></td>
-                    <td id="azelstate"></td>
+                    <td width="10%"><label>Az:</label></td>
+                    <td width="20%"><label id="az"></label></td>
+                    <td width="20%"><input id="azinput"></input></td>
+                    <td width="50%" id="azelstate"></td>
                 </tr>
                 <tr>
                     <td><label>El:</label></td>
                     <td><label id="el"></label></td>
                     <td><input id="elinput"></input></td>
-                    <td><button id="trackazel">Track Az/El</button></td>
+                    <td><center><button id="trackazel">Track Az/El</button></center></td>
+                    <script>
+                        $("#trackazel")
+                            .button()
+                            .click(function() {setindi("<set type='Number' property='Telescope.SetAltAz' Alt='" + $("#elinput").val() + "' Az='" + $("#azinput").val() + "'/>")});
+                    </script>
                 </tr>
                 <tr>
                     <td><label>RA:</label></td>
@@ -37,7 +42,12 @@
                     <td><label>Dec:</label></td>
                     <td><label id="dec"></label></td>
                     <td><input id="decinput"></input></td>
-                    <td><button id="trackradec">Track RA/Dec</button></td>
+                    <td><center><button id="trackradec">Track RA/Dec</button></center></td>
+                    <script>
+                        $("#trackradec")
+                            .button()
+                            .click(function() {setindi("<set type='Number' property='Telescope.SetRADec2K' RA='" + $("#rainput").val() + "' Dec='" + $("#decinput").val() + "'/>")});
+                    </script>
                 </tr>
             </table>
         </div>

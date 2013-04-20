@@ -1,12 +1,6 @@
-
-window.onload = window.onresize = function() {
-    $("#position").attr("style", "border:black 1px solid;padding:1px");
-}
+var timestamp = "1970-00-00T00:00:00";
 
 $(function() {
-    $("#trackazel, #trackradec" ).button();
-    $("#trackazel").click(function() {trackazel()});
-    $("#trackradec").click(function() {trackradec()});
     update();
 });
 
@@ -14,30 +8,45 @@ function update() {
     $.ajax({
         type: "POST",
         url: "indi.fcgi",
-        data: "<get property='Telescope.Pointing'/>",
+        data: "<delta timestamp='" + timestamp + "'/>",
         dataType: "xml",
-        success: function(xml){updatePointing(xml)}
+        success: function(xml){updateProperties(xml)}
     });
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: "<get property='Telescope.SetAltAz'/>",
-        dataType: "xml",
-        success: function(xml){updateSetAzEl(xml)}
-    });
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: "<get property='Telescope.SetRADec2K'/>",
-        dataType: "xml",
-        success: function(xml){updatSetRADec(xml)}
-    });
+    setTimeout(function(){update()}, 1000);
+}
 
-    setTimeout(function(){update()}, 500);
+function setindi(data) {
+    $.ajax({
+        type: "POST",
+        url: "indi.fcgi",
+        data: data,
+        dataType: "xml"
+    });
+}
+
+function updateProperties(xml) {
+    timestamp = $("delta", xml).attr("timestamp");
+
+    $("setNumberVector, defNumberVector", xml).each(function(i) {
+        var device = $(this).attr("device");
+        var name = $(this).attr("name");
+
+        if (device == "Telescope") {
+            if (name == "Pointing") {
+                updatePointing($(this));
+            }
+            else if (name == "SetAltAz") {
+                updateState("#azelstate", $(this));
+            }
+            else if (name == "SetRADec2K") {
+                updateState("#radecstate", $(this));
+            }
+        }
+    });
 }
 
 function updatePointing(xml) {
-    updateState("#positionstate", $("setNumberVector", xml))
+    updateState("#positionstate", xml)
 
     $("oneNumber", xml).each(function(i) {
         var name = $(this).attr("name");
@@ -61,33 +70,5 @@ function updatePointing(xml) {
             d = dec2dms(d, 3, 3)
             $("#dec").html(d);
         }
-    });
-}
-
-function updateSetAzEl(xml) {
-    updateState("#azelstate", $("setNumberVector", xml))
-}
-
-function updatSetRADec(xml) {
-    updateState("#radecstate", $("setNumberVector", xml))
-}
-
-function trackradec() {
-    var data = "<set type='Number' property='Telescope.SetRADec2K' RA='" + $("#rainput").val() + "' Dec='" + $("#decinput").val() + "'/>"
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: data,
-        dataType: "xml"
-    });
-}
-
-function trackazel() {
-    var data = "<set type='Number' property='Telescope.SetAltAz' Alt='" + $("#elinput").val() + "' Az='" + $("#azinput").val() + "'/>"
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: data,
-        dataType: "xml"
     });
 }

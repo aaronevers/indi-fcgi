@@ -17,8 +17,8 @@
 #ifndef INDIFCGI_H
 #define INDIFCGI_H
 
-#include "fcgi_stdio.h"
 #include <QtCore>
+#include "fcgi_stdio.h"
 #include "indiclient.h"
 
 class IndiFcgi : public QThread
@@ -33,7 +33,7 @@ protected:
 
 private:
     IndiClient mClient;
-    QMap<QString, QString> mProperties;
+    QHash<QString, QDomDocument> mProperties;
     bool mReadOnly;
 
 private slots:

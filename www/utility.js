@@ -45,10 +45,10 @@ function updateState(blockid, xml) {
     var text = "#fff";
     var fontsize = "0.7em";
     var height = "height:2em";
-    var shadow = "#999";
     var start = "#999";
     var end = "#666";
     var border = "#000";
+    var shadow = "#999";
 
     if (state == "Ok") {
         start = "#0e0";

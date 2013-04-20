@@ -147,4 +147,3 @@ QString IndiClient::formatNumber(const QString &format, const QString &number, c
 
     return text;
 }
-
