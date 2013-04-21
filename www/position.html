@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <title>Telescope Position</title>
+        <link type="text/css" href="css/vader/jquery-ui-1.10.2.custom.css" rel="stylesheet" />
+        <script language="JavaScript" type="text/javascript" src="js/jquery-1.9.1.js"></script>
+        <script language="JavaScript" type="text/javascript" src="js/jquery-ui-1.10.2.custom.js"></script>
+        <script language="JavaScript" type="text/javascript" src="utility.js"></script>
+        <script language="JavaScript" type="text/javascript" src="indi.js"></script>
+        <script language="JavaScript" type="text/javascript" src="position.js"></script>
+    </head>
+    <body>
+        <div id="position" class="ui-widget" style="border:black 1px solid;padding:1px;">
+            <table width="100%">
+                <tr>
+                    <td colspan="4"><label>Telescope Position</label></td>
+                </tr>
+                <tr>
+                    <td colspan="4" id="positionstate"></td>
+                </tr>
+                <tr>
+                    <td width="10%"><label>Az:</label></td>
+                    <td width="20%"><label id="az"></label></td>
+                    <td width="20%"><input id="azinput"></input></td>
+                    <td width="50%" id="azelstate"></td>
+                </tr>
+                <tr>
+                    <td><label>El:</label></td>
+                    <td><label id="el"></label></td>
+                    <td><input id="elinput"></input></td>
+                    <td><center><button id="trackazel">Track Az/El</button></center></td>
+                </tr>
+                <tr>
+                    <td><label>RA:</label></td>
+                    <td><label id="ra"></label></td>
+                    <td><input id="rainput"></input></td>
+                    <td id="radecstate"></td>
+                </tr>
+                <tr>
+                    <td><label>Dec:</label></td>
+                    <td><label id="dec"></label></td>
+                    <td><input id="decinput"></input></td>
+                    <td><center><button id="trackradec">Track RA/Dec</button></center></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
