@@ -32,9 +32,13 @@ protected:
     virtual void run();
 
 private:
+    QMutex mMutex;
     IndiClient mClient;
-    QHash<QString, QDomDocument> mProperties;
+    QHash<QString, QString> mProperties;
+    QHash<QString, QString> mDefinitions;
     bool mReadOnly;
+
+    QString getDelta(QHashIterator<QString, QString> &it, QString &timestamp);
 
 private slots:
     void propertyUpdated(QDomDocument);

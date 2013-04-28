@@ -3,11 +3,22 @@ var timestamp = "1970-00-00T00:00:00";
 var setPropertyCallbacks = {}
 var defPropertyCallbacks = {}
 
+function define(timeout) {
+    $.ajax({
+        type: "POST",
+        url: "indi.fcgi",
+        data: "<delta type='def' timestamp='" + timestamp + "'/>",
+        dataType: "xml",
+        success: function(xml){updateProperties(xml)}
+    });
+    setTimeout(function(){define(timeout)}, timeout);
+}
+
 function update(timeout) {
     $.ajax({
         type: "POST",
         url: "indi.fcgi",
-        data: "<delta timestamp='" + timestamp + "'/>",
+        data: "<delta type='set' timestamp='" + timestamp + "'/>",
         dataType: "xml",
         success: function(xml){updateProperties(xml)}
     });
@@ -25,6 +36,7 @@ function setindi(data) {
 
 function updateProperties(xml) {
     timestamp = $("delta", xml).attr("timestamp");
+    type = $("delta", xml).attr("type");
 
     var typestr = "";
 
@@ -36,18 +48,13 @@ function updateProperties(xml) {
         typestr += types[t] + "Vector"
     }
 
-    $("def" + typestr, xml).each(function(i) {
+    $(type + typestr, xml).each(function(i) {
         var property = $(this).attr("device") + "." + $(this).attr("name");
 
-        if (property in defPropertyCallbacks) {
+        if (type == "def" && property in defPropertyCallbacks) {
             defPropertyCallbacks[property]($(this));
         }
-    });
-
-    $("set" + typestr, xml).each(function(i) {
-        var property = $(this).attr("device") + "." + $(this).attr("name");
-
-        if (property in setPropertyCallbacks) {
+        else if (type == "set" && property in setPropertyCallbacks) {
             setPropertyCallbacks[property]($(this));
         }
     });

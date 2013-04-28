@@ -45,41 +45,30 @@ void IndiFcgi::run()
 
             if (e.tagName() == "get" && e.hasAttribute("property"))
             {
-                QHash<QString, QDomDocument>::const_iterator i = mProperties.find(e.attribute("property"));
-                if (i != mProperties.end())
+                QMutexLocker lock(&mMutex);
+                QHashIterator<QString, QString> i(mProperties);
+                if (i.findNext(e.attribute("property")))
                 {
-                    response = i.value().toString(2);
+                    response = i.value();
                 }
             }
             else if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
             {
-                QString ts = e.attribute("timestamp");
-                QDateTime dt = QDateTime::fromString(ts, Qt::ISODate);
-                QDateTime max = dt;
+                QString timestamp = e.attribute("timestamp");
+                QString type = e.attribute("type");
 
-                QHashIterator<QString, QDomDocument> i(mProperties);
-                while (i.hasNext())
+                QMutexLocker lock(&mMutex);
+                if (type == "def")
                 {
-                    i.next();
-                    QDomElement x = i.value().documentElement();
-                    if (x.hasAttribute("timestamp"))
-                    {
-                        QString its = x.attribute("timestamp");
-                        QDateTime idt = QDateTime::fromString(its, Qt::ISODate);
-                        if (idt > dt)
-                        {
-                            if (idt > max)
-                            {
-                                max = idt;
-                                ts = its;
-                            }
-
-                            response += i.value().toString(2);
-                        }
-                    }
+                    QHashIterator<QString, QString> it(mDefinitions);
+                    response = getDelta(it, timestamp);
                 }
-
-                response = "<delta timestamp='" + ts + "'>" + response + "</delta>\n";
+                else if (type == "set")
+                {
+                    QHashIterator<QString, QString> it(mProperties);
+                    response = getDelta(it, timestamp);
+                }
+                response = "<delta timestamp='" + timestamp + "' type='" + type + "'>" + response + "</delta>\n";
             }
             else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
             {
@@ -127,6 +116,40 @@ void IndiFcgi::run()
     }
 }
 
+QString IndiFcgi::getDelta(QHashIterator<QString, QString> &it, QString &timestamp)
+{
+    QString response;
+    QDateTime datetime = QDateTime::fromString(timestamp, Qt::ISODate);
+    QDateTime max = datetime;
+
+    while (it.hasNext())
+    {
+        it.next();
+        QDomDocument doc("");
+        if (doc.setContent(it.value()))
+        {
+            QDomElement el = doc.documentElement();
+            if (el.hasAttribute("timestamp"))
+            {
+                QString ts = el.attribute("timestamp");
+                QDateTime dt = QDateTime::fromString(ts, Qt::ISODate);
+                if (dt > datetime)
+                {
+                    if (dt > max)
+                    {
+                        max = dt;
+                        timestamp = ts;
+                    }
+
+                    response += it.value();
+                }
+            }
+        }
+    }
+
+    return response;
+}
+
 void IndiFcgi::propertyUpdated(QDomDocument doc)
 {
     QDomElement e = doc.documentElement();
@@ -138,10 +161,15 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
         QString op = e.tagName().left(3);
         QString type = e.tagName().mid(3);
         QString devicename = device + "." + name;
+        QString text = doc.toString(2);
 
-        if (op == "set" || op == "def")
         {
-            mProperties[devicename] = doc.cloneNode(true).toDocument();
+            QMutexLocker lock(&mMutex);
+
+            if (op == "set")
+                mProperties[devicename] = text;
+            else if (op == "def")
+                mDefinitions[devicename] = text;
         }
     }
 }

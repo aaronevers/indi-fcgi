@@ -36,11 +36,14 @@ $(function() {
                 if (step != 0) {
                     $("#focusslider").slider({step:step});
                 }
+
+                $("#focuslabel").html($(this).attr("label") + ":");
             }
         });
 
         updatePosition(xml);
     });
 
+    define(30000);
     update(1000);
 });

@@ -46,5 +46,6 @@ $(function() {
     setPropertyCallback("Telescope.Pointing", function(xml) { updatePointing(xml) });
     defPropertyCallback("Telescope.Pointing", function(xml) { updatePointing(xml) });
 
+    define(30000);
     update(1000);
 });
