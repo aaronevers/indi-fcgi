@@ -25,7 +25,22 @@ function update(timeout) {
     setTimeout(function(){update(timeout)}, timeout);
 }
 
-function setindi(data) {
+function setindi() {
+    if (arguments.length < 4 || (arguments.length % 2) != 0)
+        return
+    var data
+    for (var i = 0; i < arguments.length; i++) {
+        if (i == 0) {
+            data = "<set type='" + arguments[i] + "' "
+        } else if (i == 1) {
+            data += "property='" + arguments[i] + "' "
+        } else {
+            data += arguments[i] + "='" + arguments[i+1] + "' "
+            i += 1
+        }
+    }
+    data += "/>"
+
     $.ajax({
         type: "POST",
         url: "indi.fcgi",

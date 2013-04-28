@@ -33,15 +33,13 @@ $(function() {
 
     $("#trackazel")
         .button()
-        .click(function() {setindi("<set type='Number' property='Telescope.SetAltAz' Alt='" + $("#elinput").val() + "' Az='" + $("#azinput").val() + "'/>")});
-
+        .click(function() {setindi('Number', 'Telescope.SetAltAz', 'Alt', $("#elinput").val(), 'Az', $("#azinput").val())});
 
     setPropertyCallback("Telescope.SetRADec2K", function(xml) { updateState("#radecstate", xml); });
 
     $("#trackradec")
         .button()
-        .click(function() {setindi("<set type='Number' property='Telescope.SetRADec2K' RA='" + $("#rainput").val() + "' Dec='" + $("#decinput").val() + "'/>")});
-
+        .click(function() {setindi('Number', 'Telescope.SetRADec2K', 'RA', $("#rainput").val(), 'Dec', $("#decinput").val())});
 
     setPropertyCallback("Telescope.Pointing", function(xml) { updatePointing(xml) });
     defPropertyCallback("Telescope.Pointing", function(xml) { updatePointing(xml) });

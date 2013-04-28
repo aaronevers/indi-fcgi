@@ -1,6 +1,6 @@
 
 function setFocus(event, ui) {
-    setindi("<set type='Number' property='Telescope.Focus' position='" + ui.value + "'/>")
+    setindi('Number', 'Telescope.Focus', 'position', ui.value )
 }
 
 function updatePosition(xml) {
@@ -27,9 +27,13 @@ $(function() {
             var name = $(this).attr("name");
             if (name == "position") {
                 var min = $(this).attr("min");
+                $("#focusmin").html(min);
+
                 var max = $(this).attr("max");
+                $("#focusmax").html(max);
+
                 if (min != max) {
-                    $("#focusslider").slider({min:min});
+                    $("#focusslider").slider({min:min,max:max});
                 }
 
                 var step = $(this).attr("step");
