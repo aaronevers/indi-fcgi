@@ -41,6 +41,8 @@ function setindi() {
     }
     data += "/>"
 
+    console.log(data);
+
     $.ajax({
         type: "POST",
         url: "indi.fcgi",

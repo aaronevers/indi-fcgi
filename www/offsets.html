@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <title>Telescope Offsets</title>
+        <link type="text/css" href="css/vader/jquery-ui-1.10.2.custom.css" rel="stylesheet" />
+        <script language="JavaScript" type="text/javascript" src="js/jquery-1.9.1.js"></script>
+        <script language="JavaScript" type="text/javascript" src="js/jquery-ui-1.10.2.custom.js"></script>
+        <script language="JavaScript" type="text/javascript" src="utility.js"></script>
+        <script language="JavaScript" type="text/javascript" src="indi.js"></script>
+        <script language="JavaScript" type="text/javascript" src="offsets.js"></script>
+    </head>
+    <body>
+        <div class="ui-widget" style="border:black 1px solid;padding:1px;">
+            <table width="100%">
+                <tr>
+                    <td colspan="5"><label id="propertylabel">Telescope Offsets</label></td>
+                </tr>
+                <tr>
+                    <td colspan="5" id="offsetstate"></td>
+                </tr>
+                <tr>
+                    <td width="20%"><label id="offsetRAlabel">RA:</label></td>
+                    <td width="20%"><label id="offsetRA"></label></td>
+                    <td width="20%"><input id="offsetRAspinner"></input></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td width="20%"><label id="offsetDeclabel">Dec:</label></td>
+                    <td width="20%"><label id="offsetDec"></label></td>
+                    <td width="20%"><input id="offsetDecspinner"></input></td>
+                    <td width="40%"><center><button id="offsetButton">Update</button></center></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

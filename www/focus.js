@@ -21,10 +21,9 @@ $(function() {
         var max = map["position.max"];
         var step = map["position.step"];
 
-        $("#focusmin").html(min);
-        $("#focusmax").html(max);
-
         if (min != max) {
+            $("#focusmin").html(min);
+            $("#focusmax").html(max);
             $("#focusslider").slider({min:min,max:max});
         }
 
