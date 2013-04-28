@@ -1,25 +1,50 @@
+/************************************
+ * utility.js
+ * A collection of useful utility functions
+ */
+
+/**
+ * Pads the left of number n with zeros so the string is w digits wide
+ */
 function pad(n, w) {
     var s = '' + n;
     while (s.length < w) s = '0' + s;
     return s
 }
 
+/**
+ * Converts a radian value to degrees
+ */
 function rad2deg(rad) {
     return rad*180.0/Math.PI;
 }
 
-function rad2hr(rad) {
+/**
+ * Converts a radian value to hours
+ */
+  function rad2hr(rad) {
     return rad*12.0/Math.PI;
 }
 
+/**
+ * Converts a degree value to radians
+ */
 function deg2rad(deg) {
     return deg*Math.PI/180.0;
 }
 
+/**
+ * Converts an hour value to radians
+ */
 function hr2rad(hr) {
     return hr*Math.PI/12.0;
 }
 
+/**
+ * Formats a decimal number into degrees minutes and seconds
+ * w Determines the width of the degree component
+ * p Determines the precision of the subsecond component
+ */
 function dec2dms(dec, w, p) {
     var pow = Math.pow(10, p);
     var dms = "+";
@@ -38,6 +63,12 @@ function dec2dms(dec, w, p) {
     return dms + pad(d, w) + " " + pad(m, 2) + " " + pad(s, 2) + "." + pad(sub, p);
 }
 
+/**
+ * Colors a div component according to property state using css style attributes
+ * blockid Indicates the CSS selector text for the div
+ * state Indicates the property state
+ * message Optionally indicates the text to append to the div's html
+ */
 function updateState(blockid, state, message) {
     var style;
     var text = "#fff";
