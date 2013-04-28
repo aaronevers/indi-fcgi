@@ -49,6 +49,32 @@ function setindi() {
     });
 }
 
+function getindi(xml) {
+    var properties = {};
+
+    for (var i = 0; i < xml.attributes.length; i++) {
+        var a = xml.attributes[i];
+        properties[a.name] = a.value;
+    }
+
+    for (var c = 0; c < xml.childNodes.length; c++) {
+        child = xml.childNodes[c];
+        var name = $(child).attr("name");
+        if (name != undefined) {
+            for (var i = 0; i < child.attributes.length; i++) {
+                var a = child.attributes[i];
+                properties[name + "." + a.name] = a.value;
+            }
+
+            if (child.firstChild != undefined) {
+                properties[name + ".value"] = jQuery.trim(child.firstChild.nodeValue);
+            }
+        }
+    }
+
+    return properties;
+}
+
 function updateProperties(xml) {
     timestamp = $("delta", xml).attr("timestamp");
     type = $("delta", xml).attr("type");
@@ -67,10 +93,10 @@ function updateProperties(xml) {
         var property = $(this).attr("device") + "." + $(this).attr("name");
 
         if (type == "def" && property in defPropertyCallbacks) {
-            defPropertyCallbacks[property]($(this));
+            defPropertyCallbacks[property](getindi(this));
         }
         else if (type == "set" && property in setPropertyCallbacks) {
-            setPropertyCallbacks[property]($(this));
+            setPropertyCallbacks[property](getindi(this));
         }
     });
 }

@@ -1,51 +1,40 @@
 
 function setFocus(event, ui) {
-    setindi('Number', 'Telescope.Focus', 'position', ui.value )
+    setindi('Number', 'Telescope.Focus', 'position', ui.value)
 }
 
-function updatePosition(xml) {
-    updateState("#focusstate", xml);
+function updatePosition(map) {
+    updateState("#focusstate", map["state"], map["message"]);
 
-    $("oneNumber", xml).each(function(i) {
-        var name = $(this).attr("name");
-        if (name == "position") {
-            $("#focus").html($(this).text());
-            $("#focusslider").slider({value:$(this).text()});
-
-        }
-    });
+    $("#focus").html(map["position.value"]);
+    $("#focusslider").slider({value:map["position.value"]});
 }
 
 $(function() {
 
     $("#focusslider").slider({stop:function(event, ui) {setFocus(event, ui);}});
 
-    setPropertyCallback("Telescope.Focus", function(xml) { updatePosition(xml) });
-    defPropertyCallback("Telescope.Focus", function(xml) {
+    setPropertyCallback("Telescope.Focus", function(map) { updatePosition(map) });
+    defPropertyCallback("Telescope.Focus", function(map) {
 
-        $("oneNumber", xml).each(function(i) {
-            var name = $(this).attr("name");
-            if (name == "position") {
-                var min = $(this).attr("min");
-                $("#focusmin").html(min);
+        var min = map["position.min"];
+        var max = map["position.max"];
+        var step = map["position.step"];
 
-                var max = $(this).attr("max");
-                $("#focusmax").html(max);
+        $("#focusmin").html(min);
+        $("#focusmax").html(max);
 
-                if (min != max) {
-                    $("#focusslider").slider({min:min,max:max});
-                }
+        if (min != max) {
+            $("#focusslider").slider({min:min,max:max});
+        }
 
-                var step = $(this).attr("step");
-                if (step != 0) {
-                    $("#focusslider").slider({step:step});
-                }
+        if (step != 0) {
+            $("#focusslider").slider({step:step});
+        }
 
-                $("#focuslabel").html($(this).attr("label") + ":");
-            }
-        });
+        $("#focuslabel").html(map["position.label"] + ":");
 
-        updatePosition(xml);
+        updatePosition(map);
     });
 
     define(30000);

@@ -38,9 +38,7 @@ function dec2dms(dec, w, p) {
     return dms + pad(d, w) + " " + pad(m, 2) + " " + pad(s, 2) + "." + pad(sub, p);
 }
 
-function updateState(blockid, xml) {
-    var state = xml.attr("state")
-
+function updateState(blockid, state, message) {
     var style;
     var text = "#fff";
     var fontsize = "0.7em";
@@ -76,8 +74,6 @@ function updateState(blockid, xml) {
         + "-ms-filter:'progid:DXImageTransform.Microsoft.gradient(startColorStr=" + start + ", EndColorStr=" + end + ")'";
 
     $(blockid).attr("style", style);
-
-    var message = xml.attr("message")
 
     if (message == undefined) {
         $(blockid).html(state);
