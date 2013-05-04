@@ -27,10 +27,6 @@ IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mReadOnly(false)
     double seconds = argm["age"].toDouble();
     mMilliseconds = seconds * 1000;
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), SLOT(cullPropteries()));
-    timer->start(mMilliseconds);
-
     connect(&mClient, SIGNAL(propertyUpdate(QDomDocument)), SLOT(propertyUpdated(QDomDocument)));
     mClient.socketConnect(argm["host"]);
 }
@@ -135,21 +131,22 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
     if (e.hasAttribute("timestamp"))
     {
         QDateTime datetime = QDateTime::fromString(e.attribute("timestamp"), Qt::ISODate);
-        QMutexLocker lock(&mMutex);
-        mProperties << qMakePair(datetime, doc.toString(2));
+        {
+            QMutexLocker lock(&mMutex);
+            mProperties << qMakePair(datetime, doc.toString(2));
+        }
+        cullProperties(datetime);
     }
 }
 
-void IndiFcgi::cullProperties()
+void IndiFcgi::cullProperties(const QDateTime &now)
 {
-    QDateTime now = QDateTime::currentDateTime().toUTC();
-
     QMutexLocker lock(&mMutex);
     QLinkedList< QPair<QDateTime, QString> >::iterator it = mProperties.begin();
 
     for (; it != mProperties.end(); it++)
     {
-        if (it->first.addMSecs(mMilliseconds) >= now)
+        if (it->first.addMSecs(mMilliseconds) < now)
             it = mProperties.erase(it);
     }
 }

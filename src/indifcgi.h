@@ -42,7 +42,7 @@ private:
 
 private slots:
     void propertyUpdated(QDomDocument);
-    void cullProperties();
+    void cullProperties(const QDateTime &now);
 };
 
 #endif
