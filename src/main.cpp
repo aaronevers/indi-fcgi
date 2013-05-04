@@ -45,6 +45,9 @@ int main(int argc, char *argv[])
     if (!argm.contains("age"))
         argm["age"] = "30.0";
 
+    if (!argm.contains("reconnects"))
+        argm["reconnects"] = "3";
+
     QFile *file = new QFile(argm["log"]);
     if (file->open(QIODevice::WriteOnly|QIODevice::Truncate))
         qout.setDevice(file);
@@ -59,6 +62,7 @@ int main(int argc, char *argv[])
         qout << "  ++host=<host[:port]>  Sets host[:port] of the indiserver (Defaults to localhost:7624)." << endl;
         qout << "  ++log=<log>           Redirects log to the specified log." << endl;
         qout << "  ++readonly            Disables setting INDI properties." << endl;
+        qout << "  ++reconnects=<n>      Sets the number of automatic reconnects to the indiserver (Defaults to 3)." << endl;
         qout << endl;
         return false;
     }

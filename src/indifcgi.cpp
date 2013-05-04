@@ -19,7 +19,7 @@
 
 extern QTextStream qout;
 
-IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mReadOnly(false)
+IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mClient(argm["reconnects"].toInt()), mReadOnly(false)
 {
     if (argm.contains("readonly"))
         mReadOnly = true;
