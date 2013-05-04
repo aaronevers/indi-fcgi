@@ -34,14 +34,15 @@ protected:
 private:
     QMutex mMutex;
     IndiClient mClient;
-    QHash<QString, QString> mProperties;
-    QHash<QString, QString> mDefinitions;
+    QLinkedList< QPair<QDateTime, QString> > mProperties;
     bool mReadOnly;
+    int mMilliseconds;
 
-    QString getDelta(QHashIterator<QString, QString> &it, QString &timestamp);
+    QString getDelta(QLinkedListIterator< QPair<QDateTime, QString> > &it, QString &timestamp);
 
 private slots:
     void propertyUpdated(QDomDocument);
+    void cullProperties();
 };
 
 #endif

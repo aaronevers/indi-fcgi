@@ -24,6 +24,13 @@ IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mReadOnly(false)
     if (argm.contains("readonly"))
         mReadOnly = true;
 
+    double seconds = argm["age"].toDouble();
+    mMilliseconds = seconds * 1000;
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), SLOT(cullPropteries()));
+    timer->start(mMilliseconds);
+
     connect(&mClient, SIGNAL(propertyUpdate(QDomDocument)), SLOT(propertyUpdated(QDomDocument)));
     mClient.socketConnect(argm["host"]);
 }
@@ -43,32 +50,14 @@ void IndiFcgi::run()
             QString response;
             QDomElement e = doc.documentElement();
 
-            if (e.tagName() == "get" && e.hasAttribute("property"))
-            {
-                QMutexLocker lock(&mMutex);
-                QHashIterator<QString, QString> i(mProperties);
-                if (i.findNext(e.attribute("property")))
-                {
-                    response = i.value();
-                }
-            }
-            else if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
+            if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
             {
                 QString timestamp = e.attribute("timestamp");
-                QString type = e.attribute("type");
 
                 QMutexLocker lock(&mMutex);
-                if (type == "def")
-                {
-                    QHashIterator<QString, QString> it(mDefinitions);
-                    response = getDelta(it, timestamp);
-                }
-                else if (type == "set")
-                {
-                    QHashIterator<QString, QString> it(mProperties);
-                    response = getDelta(it, timestamp);
-                }
-                response = "<delta timestamp='" + timestamp + "' type='" + type + "'>" + response + "</delta>\n";
+                QLinkedListIterator< QPair<QDateTime, QString> > it(mProperties);
+                response = getDelta(it, timestamp);
+                response = "<delta timestamp='" + timestamp + "'>" + response + "</delta>\n";
             }
             else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
             {
@@ -116,7 +105,7 @@ void IndiFcgi::run()
     }
 }
 
-QString IndiFcgi::getDelta(QHashIterator<QString, QString> &it, QString &timestamp)
+QString IndiFcgi::getDelta(QLinkedListIterator< QPair<QDateTime, QString> > &it, QString &timestamp)
 {
     QString response;
     QDateTime datetime = QDateTime::fromString(timestamp, Qt::ISODate);
@@ -124,26 +113,16 @@ QString IndiFcgi::getDelta(QHashIterator<QString, QString> &it, QString &timesta
 
     while (it.hasNext())
     {
-        it.next();
-        QDomDocument doc("");
-        if (doc.setContent(it.value()))
+        const QPair<QDateTime, QString> &value = it.next();
+        if (value.first > datetime)
         {
-            QDomElement el = doc.documentElement();
-            if (el.hasAttribute("timestamp"))
+            if (value.first > max)
             {
-                QString ts = el.attribute("timestamp");
-                QDateTime dt = QDateTime::fromString(ts, Qt::ISODate);
-                if (dt > datetime)
-                {
-                    if (dt > max)
-                    {
-                        max = dt;
-                        timestamp = ts;
-                    }
-
-                    response += it.value();
-                }
+                max = value.first;
+                timestamp = value.first.toString(Qt::ISODate);
             }
+
+            response += value.second;
         }
     }
 
@@ -153,23 +132,24 @@ QString IndiFcgi::getDelta(QHashIterator<QString, QString> &it, QString &timesta
 void IndiFcgi::propertyUpdated(QDomDocument doc)
 {
     QDomElement e = doc.documentElement();
-    if (e.hasAttribute("device") && e.hasAttribute("name") && e.hasAttribute("state"))
+    if (e.hasAttribute("timestamp"))
     {
-        QString state = e.attribute("state");
-        QString device = e.attribute("device");
-        QString name = e.attribute("name");
-        QString op = e.tagName().left(3);
-        QString type = e.tagName().mid(3);
-        QString devicename = device + "." + name;
-        QString text = doc.toString(2);
+        QDateTime datetime = QDateTime::fromString(e.attribute("timestamp"), Qt::ISODate);
+        QMutexLocker lock(&mMutex);
+        mProperties << qMakePair(datetime, doc.toString(2));
+    }
+}
 
-        {
-            QMutexLocker lock(&mMutex);
+void IndiFcgi::cullProperties()
+{
+    QDateTime now = QDateTime::currentDateTime().toUTC();
 
-            if (op == "set")
-                mProperties[devicename] = text;
-            else if (op == "def")
-                mDefinitions[devicename] = text;
-        }
+    QMutexLocker lock(&mMutex);
+    QLinkedList< QPair<QDateTime, QString> >::iterator it = mProperties.begin();
+
+    for (; it != mProperties.end(); it++)
+    {
+        if (it->first.addMSecs(mMilliseconds) >= now)
+            it = mProperties.erase(it);
     }
 }

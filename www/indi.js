@@ -7,30 +7,9 @@
  * Global variables
  * These typically do not need to be edited by page scripts.
  */
-var setTimestamp = "1970-00-00T00:00:00";
+var gTimestamp = "1970-00-00T00:00:00";
 var setPropertyCallbacks = {}
-
-var defTimestamp = "1970-00-00T00:00:00";
 var defPropertyCallbacks = {}
-
-/**
- * API function for updating INDI property definitions.
- * Makes an ajax call to get any INDI property definitions that have changed since the last call.
- * Each page script should call this once from their on-load function to start the update poll.
- * Timeout parameter is in miliseconds.
- * Typical timeout value is 30000 to update every thirty seconds, since definitions do not change frequently.
- * Subsquent calls happen automatically.
- */
-function define(timeout) {
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: "<delta type='def' timestamp='" + defTimestamp + "'/>",
-        dataType: "xml",
-        success: function(xml){updateProperties(xml)}
-    });
-    setTimeout(function(){define(timeout)}, timeout);
-}
 
 /**
  * API function for updating INDI property values.
@@ -43,9 +22,8 @@ function define(timeout) {
 function update(timeout) {
     $.ajax({
         type: "POST",
-        type: "POST",
         url: "indi.fcgi",
-        data: "<delta type='set' timestamp='" + setTimestamp + "'/>",
+        data: "<delta timestamp='" + gTimestamp + "'/>",
         dataType: "xml",
         success: function(xml){updateProperties(xml)}
     });
@@ -131,9 +109,9 @@ function defPropertyCallback(property, callback) {
 }
 
 /**
- * Private function for mapping an INDI property's XML element into a javascript object.
+ * Private function for flattening an INDI property's XML element into a javascript object.
  */
-function getindi(xml) {
+function flattenIndi(xml) {
     var properties = {};
 
     for (var i = 0; i < xml.attributes.length; i++) {
@@ -163,11 +141,9 @@ function getindi(xml) {
  * Private function which performs callback lookup when INDI properties are updated.
  */
 function updateProperties(xml) {
-    var ts = $("delta", xml).attr("timestamp");
-    var type = $("delta", xml).attr("type");
+    var gTimestamp = $("delta", xml).attr("timestamp");
 
     var typestr = "";
-
     var types = ["Number", "Switch", "Light", "Text"];
     for (var t in types) {
         if (typestr.length) {
@@ -176,16 +152,17 @@ function updateProperties(xml) {
         typestr += types[t] + "Vector"
     }
 
-    $(type + typestr, xml).each(function(i) {
+    $("set" + typestr, xml).each(function(i) {
         var property = $(this).attr("device") + "." + $(this).attr("name");
-
-        if (type == "def" && property in defPropertyCallbacks) {
-            defTimestamp = ts;
-            defPropertyCallbacks[property](getindi(this));
+        if (property in setPropertyCallbacks) {
+            setPropertyCallbacks[property](flattenIndi(this));
         }
-        else if (type == "set" && property in setPropertyCallbacks) {
-            setTimestamp = ts;
-            setPropertyCallbacks[property](getindi(this));
+    });
+
+    $("def" + typestr, xml).each(function(i) {
+        var property = $(this).attr("device") + "." + $(this).attr("name");
+        if (property in defPropertyCallbacks) {
+            defPropertyCallbacks[property](flattenIndi(this));
         }
     });
 }

@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
     if (!argm.contains("host"))
         argm["host"] = "localhost";
 
+    if (!argm.contains("age"))
+        argm["age"] = "5.0";
+
     QFile *file = new QFile(argm["log"]);
     if (file->open(QIODevice::WriteOnly|QIODevice::Truncate))
         qout.setDevice(file);
@@ -52,7 +55,8 @@ int main(int argc, char *argv[])
         qout << "Usage: " << qApp->applicationName() << " [options]" << endl;
         qout << "Where [options] are the following:" << endl;
         qout << "  +h|++help             Prints this help statement." << endl;
-        qout << "  ++host=<host[:port]>  Sets host[:port] of the indiserver." << endl;
+        qout << "  ++age=<seconds>       Specifies the minimum age of properties to keep cached (Defaults to 5.0)." << endl;
+        qout << "  ++host=<host[:port]>  Sets host[:port] of the indiserver (Defaults to localhost:7624)." << endl;
         qout << "  ++log=<log>           Redirects log to the specified log." << endl;
         qout << "  ++readonly            Disables setting INDI properties." << endl;
         qout << endl;

@@ -68,10 +68,6 @@ $(function() {
         updatePosition(map);
     });
 
-    /* Start the definition update poll.
-     */
-    define(30000);
-
     /* Start the property update poll.
      */
     update(1000);
