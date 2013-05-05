@@ -85,6 +85,12 @@ function stateStyle(state) {
         border = "#080";
         shadow = end;
     }
+    else if (state == "On") {
+        start = "#0053D8";
+        end = "#002C7A";
+        border = "#01b";
+        shadow = end;
+    }
     else if (state == "Busy") {
         start = "#fe0";
         end = "#f90";

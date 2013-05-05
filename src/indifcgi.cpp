@@ -233,8 +233,10 @@ void IndiFcgi::cullProperties(const QString &iso)
 
     while (it.hasNext())
     {
-        QPair<QString, QString> property = it.next();
+        const QPair<QString, QString> &property = it.next();
+
         double dt = IndiClient::isoDateToJd(property.first) + mAge;
+
         if (dt < now)
             it.remove();
     }

@@ -153,7 +153,7 @@ function flattenIndi(xml) {
  * Private function which performs callback lookup when INDI properties are updated.
  */
 function updateProperties(xml) {
-    var gTimestamp = $("delta", xml).attr("timestamp");
+    gTimestamp = $("delta", xml).attr("timestamp");
 
     var typestr = "";
 

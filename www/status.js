@@ -4,34 +4,27 @@
  * components with INDI 'light' properties.
  */
 
-var tablerows = "";
-
-/**
- * Callback function for updating the interface components from the indi.js update poll function.
- * map here will contain the INDI property values converted to a javascript object.
- */
-function updateStatus(map) {
-    /* Update the #statusstate div using the updateState utility function.
-     */
-    updateState("#statusstate", map["state"], map["message"])
-
-    for (var key in map) {
-        var k = key.split(".");
-        if (k.length >= 2 && k[1] == "name") {
-            updateState("#" + k[0], map[k[0] + ".value"])
-        }
-    }
-}
-
 /**
  * JQuery alias called when the html page DOM is available for editing.
  * Put post-html initialization here.
  */
 $(function() {
 
-    /* Associate the updatePointing callback with the "Telescope.Pointing" property.
+    /* Set properties callback.
      */
-    setPropertyCallback("Telescope.Status", function(map) { updateStatus(map) });
+    setPropertyCallback("Telescope.Status", function(map) {
+
+        /* Update the #statusstate div using the updateState utility function.
+         */
+        updateState("#statusstate", map["state"], map["message"])
+
+        for (var key in map) {
+            var k = key.split(".");
+            if (k.length >= 2 && k[1] == "name") {
+                updateState("#" + k[0], map[k[0] + ".value"])
+            }
+        }
+    });
 
     /* Property definition callback.
      */
@@ -39,17 +32,66 @@ $(function() {
 
         /* Create the html based on the status lights available.
          */
-        tablerows = "";
+        var tablerows = "";
         for (var key in map) {
             var k = key.split(".");
             if (k.length >= 2 && k[1] == "name") {
-                tablerows += "<tr><td width='20%'><label>" + map[key]
-                    + "</label></td><td width='20%'><div id='" + k[0] + "' style='"
+                tablerows += "<tr><td width='25%'><label>" + map[key]
+                    + "</label></td><td width='25%' id='" + k[0] + "' style='"
                     + stateStyle(map[k[0] + ".value"]) + "'>" + map[k[0] + ".value"]
-                    + "</div></td><td width='60%'><label>" + map[k[0] + ".label"] + "</label></td></tr>\n"
+                    + "</td><td width='50%'><label>" + map[k[0] + ".label"] + "</label></td></tr>\n"
             }
         }
+
         $("#statustable").html(tablerows);
+    });
+
+    /* Set properties callback.
+     */
+    setPropertyCallback("CCDCam.FanSpeed", function(map) {
+
+        /* Update the state div using the updateState utility function.
+         */
+        updateState("#fanstate", map["state"], map["message"])
+
+        for (var key in map) {
+            var k = key.split(".");
+            if (k.length >= 2 && k[1] == "name") {
+                updateState("#" + k[0] + "-value", map[k[0] + ".value"])
+                if (map[k[0] + ".value"] == "On") {
+                    $("#" + k[0]).prop('checked', true);
+                }
+            }
+        }
+    });
+
+    /* Property definition callback.
+     */
+    defPropertyCallback("CCDCam.FanSpeed", function(map) {
+
+        /* Create the html based on the status lights available.
+         */
+        var tablerows = "";
+        for (var key in map) {
+            var k = key.split(".");
+            if (k.length >= 2 && k[1] == "name") {
+                var checked = "";
+                if (map[k[0] + ".value"] == "On") {
+                    checked = " checked='checked'";
+                }
+                tablerows += "<tr>";
+                tablerows += "<td width='25%'><input type='radio' id='" + k[0] + "' name='fanspeed'" + checked + "/><label for='" + k[0] + "'>" + k[0] + "</label></td>";
+                tablerows += "<td width='25%' id='" + k[0] + "-value' style='" + stateStyle(map[k[0] + ".value"]) + "'>" + map[k[0] + ".value"] + "</td>";
+                tablerows += "<td width='50%'>" + map[k[0] + ".label"] + "</td>";
+                tablerows += "</tr>\n";
+            }
+        }
+
+        $("#fantable").html(tablerows);
+
+        $("#fantable :radio").click(function(e) {
+            setindi('Switch', 'CCDCam.FanSpeed', $(this).attr("id"), 'On');
+        });
     });
 
     /**

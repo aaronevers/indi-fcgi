@@ -62,6 +62,35 @@ $(function() {
      */
     setPropertyCallback("Telescope.Pointing", function(map) { updatePointing(map) });
 
+    /* Create a callback for updating the stop state div when the INDI property is updated.
+     */
+    setPropertyCallback("Telescope.Stop", function(map) {
+        updateState("#stopstate", map["state"], map["message"]);
+        updateState("#stopvalue", map["Stop.value"]);
+    });
+
+    /* JQueryUI syntax for declaring that #stop is a button.
+     * Creates a callback for stopping the telescope when the button is clicked.
+     */
+    $("#stop")
+        .button()
+        .click(function() { setindi('Switch', 'Telescope.Stop', 'Stop', "On") });
+
+    /* Create a callback for updating the stop state div when the INDI property is updated.
+     */
+    setPropertyCallback("Telescope.Stow", function(map) {
+        updateState("#stowstate", map["state"], map["message"]);
+        updateState("#stowvalue", map["Go.value"]);
+        $("#stow").prop('checked', (map["Go.value"] == "On")?true:false)
+    });
+
+    /* JQueryUI syntax for declaring that #stop is a button.
+     * Creates a callback for stopping the telescope when the button is clicked.
+     */
+    $("#stow")
+        .button()
+        .click(function() { setindi('Switch', 'Telescope.Stow', 'Go', "On") });
+
     /**
      * Start the property update poll.
      */
