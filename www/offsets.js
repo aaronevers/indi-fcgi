@@ -84,10 +84,6 @@ $(function() {
          */
         $("#offsetRAlabel").html(map["RA.label"] + ":");
         $("#offsetDeclabel").html(map["Dec.label"] + ":");
-
-        /* Initialize the interface components.
-         */
-        updateOffsets(map);
     });
 
     /* Start the property update poll.

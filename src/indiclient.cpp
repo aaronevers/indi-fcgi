@@ -168,3 +168,16 @@ QString IndiClient::formatNumber(const QString &format, const QString &number, c
 
     return text;
 }
+
+double IndiClient::isoDateToJd(const QString &date)
+{
+    QStringList list = date.split(QRegExp("[-T:]"));
+    if (list.size() != 6)
+        return 0;
+
+    int a = (14-list[1].toInt())/12;
+    int y = list[0].toInt() + 4800 - a;
+    int m = list[1].toInt() + 12*a - 3;
+    int jdn = list[2].toInt() + (153*m + 2)/5 + 365*y + y/4 - y/100 + y/400 - 32045;
+    return jdn + (list[3].toDouble()-12)/24 + list[4].toDouble()/1440 + list[5].toDouble()/86400;
+}

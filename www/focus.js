@@ -62,10 +62,6 @@ $(function() {
         /* Update the label text.
          */
         $("#focuslabel").html(map["position.label"] + ":");
-
-        /* Initialize the interface components.
-         */
-        updatePosition(map);
     });
 
     /* Start the property update poll.

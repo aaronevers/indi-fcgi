@@ -69,7 +69,7 @@ function dec2dms(dec, w, p) {
  * state Indicates the property state
  * message Optionally indicates the text to append to the div's html
  */
-function updateState(blockid, state, message) {
+function stateStyle(state) {
     var style;
     var text = "#fff";
     var fontsize = "0.7em";
@@ -104,7 +104,17 @@ function updateState(blockid, state, message) {
         + "background-image:-webkit-gradient(linear,left top,left bottom,color-stop(0," + start + "),color-stop(1," + end + "));"
         + "-ms-filter:'progid:DXImageTransform.Microsoft.gradient(startColorStr=" + start + ", EndColorStr=" + end + ")'";
 
-    $(blockid).attr("style", style);
+    return style;
+}
+
+/**
+ * Colors a div component according to property state using css style attributes
+ * blockid Indicates the CSS selector text for the div
+ * state Indicates the property state
+ * message Optionally indicates the text to append to the div's html
+ */
+function updateState(blockid, state, message) {
+    $(blockid).attr("style", stateStyle(state));
 
     if (message == undefined) {
         $(blockid).html(state);

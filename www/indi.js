@@ -12,6 +12,18 @@ var setPropertyCallbacks = {}
 var defPropertyCallbacks = {}
 
 /**
+ * Private post-load method refreshes the defs
+ */
+$(function() {
+    $.ajax({
+        type: "POST",
+        url: "indi.fcgi",
+        data: "<getProperties/>",
+        dataType: "xml"
+    });
+});
+
+/**
  * API function for updating INDI property values.
  * Makes an ajax call to get any INDI property that have changed since the last call.
  * Each page script should call this once from their on-load function to start the update poll.
@@ -144,24 +156,26 @@ function updateProperties(xml) {
     var gTimestamp = $("delta", xml).attr("timestamp");
 
     var typestr = "";
-    var types = ["Number", "Switch", "Light", "Text"];
-    for (var t in types) {
-        if (typestr.length) {
-            typestr += ", "
+
+    var ops = ["set", "def"];
+    for (var op in ops) {
+        var types = ["Number", "Switch", "Light", "Text"];
+        for (var t in types) {
+            if (typestr.length) {
+                typestr += ", "
+            }
+            typestr += ops[op] + types[t] + "Vector"
         }
-        typestr += types[t] + "Vector"
     }
 
-    $("set" + typestr, xml).each(function(i) {
+    $(typestr, xml).each(function(i) {
         var property = $(this).attr("device") + "." + $(this).attr("name");
+
         if (property in setPropertyCallbacks) {
             setPropertyCallbacks[property](flattenIndi(this));
         }
-    });
 
-    $("def" + typestr, xml).each(function(i) {
-        var property = $(this).attr("device") + "." + $(this).attr("name");
-        if (property in defPropertyCallbacks) {
+        if (ops[op] == 'def' && property in defPropertyCallbacks) {
             defPropertyCallbacks[property](flattenIndi(this));
         }
     });

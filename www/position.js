@@ -62,10 +62,6 @@ $(function() {
      */
     setPropertyCallback("Telescope.Pointing", function(map) { updatePointing(map) });
 
-    /* Associate the updatePointing callback with the definition update to initialize the interface components.
-     */
-    defPropertyCallback("Telescope.Pointing", function(map) { updatePointing(map) });
-
     /**
      * Start the property update poll.
      */

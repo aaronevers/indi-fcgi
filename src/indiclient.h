@@ -42,6 +42,7 @@ public:
     bool connected();
 
     static QString formatNumber(const QString &format, const QString &number, const bool &sexagesimal);
+    static double isoDateToJd(const QString &date);
 
 private:
     quint16 mPort;

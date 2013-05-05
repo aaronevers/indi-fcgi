@@ -12,4 +12,8 @@ $(function() {
     $("#offsets")
         .button()
         .click(function() { top.location.href="offsets.html"; });
+
+    $("#status")
+        .button()
+        .click(function() { top.location.href="status.html"; });
 });

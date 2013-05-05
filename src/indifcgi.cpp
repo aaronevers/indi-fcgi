@@ -19,13 +19,15 @@
 
 extern QTextStream qout;
 
-IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mClient(argm["reconnects"].toInt()), mReadOnly(false)
+IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mClient(argm["reconnects"].toInt()), mReadOnly(false), mUseMappedCache(false)
 {
     if (argm.contains("readonly"))
         mReadOnly = true;
 
-    double seconds = argm["age"].toDouble();
-    mMilliseconds = seconds * 1000;
+    if (argm.contains("mapcache"))
+        mUseMappedCache = true;
+
+    mAge = argm["age"].toDouble() / 86400;
 
     connect(&mClient, SIGNAL(propertyUpdate(QDomDocument)), SLOT(propertyUpdated(QDomDocument)));
     mClient.socketConnect(argm["host"]);
@@ -46,13 +48,22 @@ void IndiFcgi::run()
             QString response;
             QDomElement e = doc.documentElement();
 
-            if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
+            if (e.tagName() == "getProperties")
+            {
+                if (!mUseMappedCache)
+                {
+                    QDomDocument doc("");
+                    QDomElement getProperties = doc.createElement("getProperties");
+                    getProperties.setAttribute("version", indi::VERSION);
+                    doc.appendChild(getProperties);
+                    mClient.sendProperty(doc);
+                }
+            }
+            else if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
             {
                 QString timestamp = e.attribute("timestamp");
 
-                QMutexLocker lock(&mMutex);
-                QLinkedListIterator< QPair<QDateTime, QString> > it(mProperties);
-                response = getDelta(it, timestamp);
+                response = getDelta(timestamp);
                 response = "<delta timestamp='" + timestamp + "'>" + response + "</delta>\n";
             }
             else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
@@ -101,24 +112,76 @@ void IndiFcgi::run()
     }
 }
 
-QString IndiFcgi::getDelta(QLinkedListIterator< QPair<QDateTime, QString> > &it, QString &timestamp)
+QString IndiFcgi::getDelta(QHashIterator<QString, QString> &it, QString &timestamp)
 {
     QString response;
-    QDateTime datetime = QDateTime::fromString(timestamp, Qt::ISODate);
-    QDateTime max = datetime;
+    double datetime = IndiClient::isoDateToJd(timestamp);
+    double max = datetime;
 
     while (it.hasNext())
     {
-        const QPair<QDateTime, QString> &value = it.next();
-        if (value.first > datetime)
+        it.next();
+        QDomDocument doc("");
+        if (doc.setContent(it.value()))
         {
-            if (value.first > max)
+            QDomElement el = doc.documentElement();
+            if (el.hasAttribute("timestamp"))
             {
-                max = value.first;
-                timestamp = value.first.toString(Qt::ISODate);
-            }
+                QString ts = el.attribute("timestamp");
+                double dt = IndiClient::isoDateToJd(ts);
+                if (dt > datetime)
+                {
+                    if (dt > max)
+                    {
+                        max = dt;
+                        timestamp = ts;
+                    }
 
-            response += value.second;
+                    response += it.value();
+                }
+            }
+        }
+    }
+
+    return response;
+}
+
+QString IndiFcgi::getDelta(QString &timestamp)
+{
+    QString response;
+    double datetime = IndiClient::isoDateToJd(timestamp);
+    double max = datetime;
+
+    QMutexLocker lock(&mMutex);
+
+    if (mUseMappedCache)
+    {
+        QString ts = timestamp;
+        QHashIterator<QString, QString> def(mDefinitionMap);
+        response += getDelta(def, ts);
+
+        QHashIterator<QString, QString> set(mPropertyMap);
+        response += getDelta(set, timestamp);
+    }
+    else
+    {
+        QLinkedListIterator< QPair<QString, QString> > it(mProperties);
+
+        while (it.hasNext())
+        {
+            const QPair<QString, QString> &value = it.next();
+            double dt = IndiClient::isoDateToJd(value.first);
+
+            if (dt > datetime)
+            {
+                if (dt > max)
+                {
+                    max = dt;
+                    timestamp = value.first;
+                }
+
+                response += value.second;
+            }
         }
     }
 
@@ -128,25 +191,51 @@ QString IndiFcgi::getDelta(QLinkedListIterator< QPair<QDateTime, QString> > &it,
 void IndiFcgi::propertyUpdated(QDomDocument doc)
 {
     QDomElement e = doc.documentElement();
-    if (e.hasAttribute("timestamp"))
+
+    if (mUseMappedCache)
     {
-        QDateTime datetime = QDateTime::fromString(e.attribute("timestamp"), Qt::ISODate);
+        if (e.hasAttribute("device") && e.hasAttribute("name") && e.hasAttribute("state"))
         {
-            QMutexLocker lock(&mMutex);
-            mProperties << qMakePair(datetime, doc.toString(2));
+            QString devicename = e.attribute("device") + "." + e.attribute("name");
+            QString op = e.tagName().left(3);
+            QString text = doc.toString(2);
+
+            {
+                QMutexLocker lock(&mMutex);
+
+                if (op == "set")
+                    mPropertyMap[devicename] = text;
+                else if (op == "def")
+                    mDefinitionMap[devicename] = text;
+            }
         }
-        cullProperties(datetime);
+    }
+    else
+    {
+        if (e.hasAttribute("timestamp"))
+        {
+            QString timestamp = e.attribute("timestamp");
+            {
+                QMutexLocker lock(&mMutex);
+                mProperties << qMakePair(timestamp, doc.toString(2));
+            }
+            cullProperties(timestamp);
+        }
     }
 }
 
-void IndiFcgi::cullProperties(const QDateTime &now)
+void IndiFcgi::cullProperties(const QString &iso)
 {
-    QMutexLocker lock(&mMutex);
-    QLinkedList< QPair<QDateTime, QString> >::iterator it = mProperties.begin();
+    double now = IndiClient::isoDateToJd(iso);
 
-    for (; it != mProperties.end(); it++)
+    QMutexLocker lock(&mMutex);
+    QMutableLinkedListIterator< QPair<QString, QString> > it(mProperties);
+
+    while (it.hasNext())
     {
-        if (it->first.addMSecs(mMilliseconds) < now)
-            it = mProperties.erase(it);
+        QPair<QString, QString> property = it.next();
+        double dt = IndiClient::isoDateToJd(property.first) + mAge;
+        if (dt < now)
+            it.remove();
     }
 }
