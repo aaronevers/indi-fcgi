@@ -150,32 +150,35 @@ function flattenIndi(xml) {
 }
 
 /**
+ * Private initialization of the list of types that updateProperties will handle.
+ */
+var gTypestr = "";
+var ops = ["set", "def"];
+for (var op in ops) {
+    var types = ["Number", "Switch", "Light", "Text"];
+    for (var t in types) {
+        if (gTypestr.length) {
+            gTypestr += ", "
+        }
+        gTypestr += ops[op] + types[t] + "Vector"
+    }
+}
+
+/**
  * Private function which performs callback lookup when INDI properties are updated.
  */
 function updateProperties(xml) {
     gTimestamp = $("delta", xml).attr("timestamp");
 
-    var typestr = "";
+    $(gTypestr, xml).each(function(i) {
+        var op = this.nodeName.substring(0, 3);
 
-    var ops = ["set", "def"];
-    for (var op in ops) {
-        var types = ["Number", "Switch", "Light", "Text"];
-        for (var t in types) {
-            if (typestr.length) {
-                typestr += ", "
-            }
-            typestr += ops[op] + types[t] + "Vector"
-        }
-    }
-
-    $(typestr, xml).each(function(i) {
         var property = $(this).attr("device") + "." + $(this).attr("name");
-
         if (property in setPropertyCallbacks) {
             setPropertyCallbacks[property](flattenIndi(this));
         }
 
-        if (ops[op] == 'def' && property in defPropertyCallbacks) {
+        if (op == 'def' && property in defPropertyCallbacks) {
             defPropertyCallbacks[property](flattenIndi(this));
         }
     });
