@@ -23,7 +23,7 @@ function updatePosition(map) {
     /* Update the focus label and slider values using the indi propery value.
      */
     $("#focus").html(map["position.value"]);
-    $("#focusslider").slider({value:map["position.value"]});
+    $("#focusslider").slider({value:parseFloat(map["position.value"])});
 }
 
 /**
@@ -45,9 +45,9 @@ $(function() {
     defPropertyCallback("Telescope.Focus", function(map) {
         /* Update the slider with the min, max, and step attributes only present in the INDI definition update.
          */
-        var min = map["position.min"];
-        var max = map["position.max"];
-        var step = map["position.step"];
+        var min = parseInt(map["position.min"]);
+        var max = parseInt(map["position.max"]);
+        var step = parseInt(map["position.step"]);
 
         if (min != max) {
             $("#focusmin").html(min);

@@ -32,14 +32,15 @@ $(function() {
  * Subsquent calls happen automatically.
  */
 function update(timeout) {
-    $.ajax({
-        type: "POST",
-        url: "indi.fcgi",
-        data: "<delta timestamp='" + gTimestamp + "'/>",
-        dataType: "xml",
-        success: function(xml){updateProperties(xml)}
-    });
-    setTimeout(function(){update(timeout)}, timeout);
+    setInterval(function() {
+        $.ajax({
+            type: "POST",
+            url: "indi.fcgi",
+            data: "<delta timestamp='" + gTimestamp + "'/>",
+            dataType: "xml",
+            success: function(xml){updateProperties(xml)}
+        });
+    }, timeout);
 }
 
 /**

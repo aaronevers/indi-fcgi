@@ -56,9 +56,9 @@ $(function() {
     defPropertyCallback("Telescope.Offsets", function(map) {
         /* Update the spinners with the min, max, and step attributes only present in the INDI definition update.
          */
-        var min = map["RA.min"];
-        var max = map["RA.max"];
-        var step = map["RA.step"];
+        var min = parseInt(map["RA.min"]);
+        var max = parseInt(map["RA.max"]);
+        var step = parseInt(map["RA.step"]);
 
         if (min != max) {
             $("#offsetRAspinner").spinner({min:min,max:max});
@@ -68,9 +68,9 @@ $(function() {
             $("#offsetRAspinner").spinner({step:step});
         }
 
-        min = map["Dec.min"];
-        max = map["Dec.max"];
-        step = map["Dec.step"];
+        min = parseInt(map["Dec.min"]);
+        max = parseInt(map["Dec.max"]);
+        step = parseInt(map["Dec.step"]);
 
         if (min != max) {
             $("#offsetDecspinner").spinner({min:min,max:max});
