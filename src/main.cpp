@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
         qout << "  ++age=<seconds>       Specifies the minimum age of properties to keep cached (Defaults to 30.0)." << endl;
         qout << "  ++host=<host[:port]>  Sets host[:port] of the indiserver (Defaults to localhost:7624)." << endl;
         qout << "  ++log=<log>           Redirects log to the specified log." << endl;
-        qout << "  ++mapcache            Use map cache instead of linked list." << endl;
         qout << "  ++readonly            Disables setting INDI properties." << endl;
         qout << "  ++reconnects=<n>      Sets the number of automatic reconnects to the indiserver (Defaults to 3)." << endl;
         qout << endl;

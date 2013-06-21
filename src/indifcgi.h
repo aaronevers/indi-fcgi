@@ -23,7 +23,7 @@
 
 class IndiFcgi : public QThread
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     IndiFcgi(const QMap<QString, QString> &argm);
@@ -34,21 +34,16 @@ protected:
 private:
     QMutex mMutex;
     IndiClient mClient;
-    QLinkedList< QPair<QString, QString> > mProperties;
-
-    QHash<QString, QString> mPropertyMap;
-    QHash<QString, QString> mDefinitionMap;
+    QLinkedList< QPair<qint64, QString> > mProperties;
 
     bool mReadOnly;
-    bool mUseMappedCache;
-    double mAge;
+    qint64 mAge;
 
-    QString getDelta(QHashIterator<QString, QString> &it, QString &timestamp);
     QString getDelta(QString &timestamp);
 
 private slots:
     void propertyUpdated(QDomDocument);
-    void cullProperties(const QString &now);
+    void cullProperties(const qint64 &now);
 };
 
 #endif

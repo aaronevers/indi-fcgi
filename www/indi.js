@@ -7,7 +7,7 @@
  * Global variables
  * These typically do not need to be edited by page scripts.
  */
-var gTimestamp = "1970-00-00T00:00:00";
+var gTimestamp = "0";
 var setPropertyCallbacks = {}
 var defPropertyCallbacks = {}
 
