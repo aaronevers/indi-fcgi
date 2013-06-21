@@ -99,15 +99,14 @@ void IndiClient::sendProperty(QDomDocument doc)
 void IndiClient::socketReadyRead()
 {
     QDomDocument doc("");
-    static QByteArray bytes;
 
     while (mQTcpSocket.canReadLine())
     {
-        bytes += mQTcpSocket.readLine();
-        if (doc.setContent(bytes, false))
+        mLines += mQTcpSocket.readLine();
+        if (doc.setContent(mLines.join(""), false))
         {
             emit propertyUpdate(doc);
-            bytes.clear();
+            mLines.clear();
         }
     }
 }

@@ -34,7 +34,7 @@ namespace indi
 
 class IndiClient : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     IndiClient(const int &attempts);
@@ -50,6 +50,7 @@ private:
     QString mHost;
     int mAttempts;
     int mAttempt;
+    QStringList mLines;
 
 signals:
     void propertyUpdate(QDomDocument);
