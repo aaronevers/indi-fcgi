@@ -16,6 +16,7 @@
 
 #include "indifcgi.h"
 #include <iostream>
+#include <sys/time.h>
 
 extern QTextStream qout;
 
@@ -24,7 +25,7 @@ IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mClient(argm["reconnects
     if (argm.contains("readonly"))
         mReadOnly = true;
 
-    mAge = (qint64) (argm["age"].toDouble() * 1000);
+    mAge = (qint64) (argm["age"].toDouble() * 1e6);
 
     connect(&mClient, SIGNAL(propertyUpdate(QDomDocument)), SLOT(propertyUpdated(QDomDocument)));
     mClient.socketConnect(argm["host"]);
@@ -119,7 +120,7 @@ QString IndiFcgi::getDelta(QString &timestamp)
     {
         const QPair<qint64, QString> &value = it.next();
 
-        if (value.first > datetime)
+        if (value.first >= datetime)
         {
             max = qMax(value.first, max);
             response += value.second;
@@ -134,7 +135,10 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
 {
     QDomElement e = doc.documentElement();
 
-    qint64 now = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
+    timeval tv;
+    gettimeofday(&tv, NULL);
+
+    qint64 now = (1e6 * tv.tv_sec) + tv.tv_usec;
 
     {
         QMutexLocker lock(&mMutex);
