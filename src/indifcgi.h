@@ -34,16 +34,17 @@ protected:
 private:
     QMutex mMutex;
     IndiClient mClient;
-    QLinkedList< QPair<qint64, QString> > mProperties;
+    QMap< QString, QLinkedList< QPair<qint64, QString> > > mProperties;
 
     bool mReadOnly;
     qint64 mAge;
 
-    QString getDelta(QString &timestamp);
+    QString getDelta(qint64 &max, const qint64 &datetime);
+    QString getDelta(qint64 &max, const qint64 &datetime, const QString &device);
 
 private slots:
     void propertyUpdated(QDomDocument);
-    void cullProperties(const qint64 &now);
+    void cullProperties(const qint64 &now, const QString &device);
 };
 
 #endif

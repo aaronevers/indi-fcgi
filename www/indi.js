@@ -36,7 +36,7 @@ function update(timeout) {
         $.ajax({
             type: "POST",
             url: "indi.fcgi",
-            data: "<delta timestamp='" + gTimestamp + "'/>",
+            data: "<delta timestamp='" + gTimestamp + "'><device>Telescope</device></delta>",
             dataType: "xml",
             success: function(xml){updateProperties(xml)}
         });

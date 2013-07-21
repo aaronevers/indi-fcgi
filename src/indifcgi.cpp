@@ -15,12 +15,11 @@
  ***********************************************************************/
 
 #include "indifcgi.h"
-#include <iostream>
 #include <sys/time.h>
 
 extern QTextStream qout;
 
-IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mClient(argm["reconnects"].toInt()), mReadOnly(false)
+IndiFcgi::IndiFcgi(const QMap<QString, QString> &argm): mMutex(QMutex::Recursive), mClient(argm["reconnects"].toInt()), mReadOnly(false)
 {
     if (argm.contains("readonly"))
         mReadOnly = true;
@@ -56,9 +55,25 @@ void IndiFcgi::run()
             }
             else if (e.tagName() == "delta" && e.hasAttribute("timestamp"))
             {
-                QString timestamp = e.attribute("timestamp");
-                response = getDelta(timestamp);
-                response = "<delta timestamp='" + timestamp + "'>" + response + "</delta>\n";
+                QStringList delta;
+                qint64 timestamp = e.attribute("timestamp").toLongLong();
+
+                if (e.hasChildNodes())
+                {
+                    qint64 ts = timestamp;
+                    QDomElement c;
+                    for (c = e.firstChildElement(); !c.isNull(); c = c.nextSiblingElement())
+                    {
+                        if (c.nodeName() == "device")
+                            delta += getDelta(timestamp, ts, c.text().trimmed());
+                    }
+                }
+                else
+                {
+                    delta += getDelta(timestamp, timestamp);
+                }
+
+                response = "<delta timestamp='" + QString::number(timestamp) + "'>" + delta.join("") + "</delta>\n";
             }
             else if (!mReadOnly && e.tagName() == "set" && e.hasAttribute("property") && e.hasAttribute("type"))
             {
@@ -106,28 +121,41 @@ void IndiFcgi::run()
     }
 }
 
-QString IndiFcgi::getDelta(QString &timestamp)
+QString IndiFcgi::getDelta(qint64 &max, const qint64 &datetime)
 {
     QStringList response;
-    qint64 datetime = timestamp.toLongLong();
-    qint64 max = datetime;
+    QMutexLocker lock(&mMutex);
+    QListIterator<QString> it(mProperties.keys());
+    while (it.hasNext())
+        response += getDelta(max, datetime, it.next());
+    return response.join("");
+}
+
+QString IndiFcgi::getDelta(qint64 &max, const qint64 &datetime, const QString &device)
+{
+    QStringList response;
+    max = qMax(max, datetime);
 
     QMutexLocker lock(&mMutex);
 
-    QLinkedListIterator< QPair<qint64, QString> > it(mProperties);
-
-    while (it.hasNext())
+    if (device.size())
     {
-        const QPair<qint64, QString> &value = it.next();
-
-        if (value.first >= datetime)
+        if (mProperties.contains(device))
         {
-            max = qMax(value.first, max);
-            response += value.second;
+            QLinkedListIterator< QPair<qint64, QString> > it(mProperties[device]);
+            while (it.hasNext())
+            {
+                const QPair<qint64, QString> &value = it.next();
+
+                if (value.first >= datetime)
+                {
+                    max = qMax(value.first, max);
+                    response += value.second;
+                }
+            }
         }
     }
 
-    timestamp = QString::number(max);
     return response.join("");
 }
 
@@ -142,16 +170,16 @@ void IndiFcgi::propertyUpdated(QDomDocument doc)
 
     {
         QMutexLocker lock(&mMutex);
-        mProperties << qMakePair(now, doc.toString(2));
+        mProperties[e.attribute("device")] << qMakePair(now, doc.toString(2));
     }
 
-    cullProperties(now);
+    cullProperties(now, e.attribute("device"));
 }
 
-void IndiFcgi::cullProperties(const qint64 &now)
+void IndiFcgi::cullProperties(const qint64 &now, const QString &device)
 {
     QMutexLocker lock(&mMutex);
-    QMutableLinkedListIterator< QPair<qint64, QString> > it(mProperties);
+    QMutableLinkedListIterator< QPair<qint64, QString> > it(mProperties[device]);
 
     while (it.hasNext())
     {

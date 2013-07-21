@@ -17,3 +17,5 @@ LIBS += /usr/local/lib/libfcgi.a
 
 HEADERS += src/indiclient.h   src/indifcgi.h
 SOURCES += src/indiclient.cpp src/indifcgi.cpp src/main.cpp
+
+OTHER_FILES += www/*.js www/*.html
