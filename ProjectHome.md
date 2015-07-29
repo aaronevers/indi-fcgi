@@ -1,0 +1,1 @@
+Fcgi driver for using INDI protocol via AJAX.
